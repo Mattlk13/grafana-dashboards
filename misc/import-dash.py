@@ -13,7 +13,7 @@ DIR = 'dashboards/'
 
 
 def main():
-    headers = {'Authorization': 'Bearer %s' % (API_KEY,), 'Content-Type': 'application/json'}
+    headers = {'Authorization': 'Bearer {0!s}'.format(API_KEY), 'Content-Type': 'application/json'}
 
     for file in os.listdir(DIR):
         if not file.endswith('.json'):
@@ -25,7 +25,7 @@ def main():
         f.close()
 
         data = {'dashboard': dash, 'overwrite': True}
-        r = requests.post('%s/api/dashboards/db' % (HOST,), json=data, headers=headers)
+        r = requests.post('{0!s}/api/dashboards/db'.format(HOST), json=data, headers=headers)
         if r.status_code != 200:
             print r.status_code, r.content
             break

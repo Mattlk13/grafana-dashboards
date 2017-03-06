@@ -52,25 +52,25 @@ def main():
 
     # Exit when --check-cq is set and CQ already exist
     if options.exit_on_cq and queries:
-        print '[%s] %s continuous queries exist.' % (PROMETHEUS_DB, len(queries))
+        print '[{0!s}] {1!s} continuous queries exist.'.format(PROMETHEUS_DB, len(queries))
         return
 
     count = 0
     for name in queries:
-        client.query('DROP CONTINUOUS QUERY %s ON %s;' % (name, PROMETHEUS_DB))
+        client.query('DROP CONTINUOUS QUERY {0!s} ON {1!s};'.format(name, PROMETHEUS_DB))
         count += 1
 
-    print '[%s] Deleted %s continuous queries.' % (PROMETHEUS_DB, count)
+    print '[{0!s}] Deleted {1!s} continuous queries.'.format(PROMETHEUS_DB, count)
 
     # Recreate trending db
     if options.drop_db:
         client.drop_database(TRENDING_DB)
-        print '[%s] Database dropped.' % (TRENDING_DB,)
+        print '[{0!s}] Database dropped.'.format(TRENDING_DB)
 
     dbs = [x['name'] for x in client.get_list_database()]
     if TRENDING_DB not in dbs:
         client.create_database(TRENDING_DB, if_not_exists=True)
-        print '[%s] Database created.' % (TRENDING_DB,)
+        print '[{0!s}] Database created.'.format(TRENDING_DB)
 
     # Create new CQ
     count = 0
@@ -78,8 +78,8 @@ def main():
     for interval in INTERVALS:
         # Create retention
         if interval not in retentions:
-            client.create_retention_policy('"%s"' % (interval,), 'INF', '1', TRENDING_DB)
-            print '[%s] Retention policy "%s" created.' % (TRENDING_DB, interval)
+            client.create_retention_policy('"{0!s}"'.format(interval), 'INF', '1', TRENDING_DB)
+            print '[{0!s}] Retention policy "{1!s}" created.'.format(TRENDING_DB, interval)
 
         for metric, data in METRICS.iteritems():
             params = {'metric': metric,
@@ -94,18 +94,18 @@ def main():
                 params['select'] = 'MAX(value)'
 
             if 'group_by' in data:
-                params['group'] = ', %s' % (data['group_by'],)
+                params['group'] = ', {0!s}'.format(data['group_by'])
 
-            query = """CREATE CONTINUOUS QUERY %(metric)s_%(interval)s ON %(prom_db)s
+            query = """CREATE CONTINUOUS QUERY {metric!s}_{interval!s} ON {prom_db!s}
                 BEGIN
-                    SELECT %(select)s INTO %(trend_db)s."%(interval)s".%(metric)s
-                    FROM %(metric)s GROUP BY time(%(interval)s), alias%(group)s
+                    SELECT {select!s} INTO {trend_db!s}."{interval!s}".{metric!s}
+                    FROM {metric!s} GROUP BY time({interval!s}), alias{group!s}
                 END;
-            """ % params
+            """.format(**params)
             client.query(query)
             count += 1
 
-    print '[%s] Added %s continuous queries.' % (PROMETHEUS_DB, count)
+    print '[{0!s}] Added {1!s} continuous queries.'.format(PROMETHEUS_DB, count)
 
 
 if __name__ == '__main__':

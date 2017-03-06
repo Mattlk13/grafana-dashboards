@@ -12,8 +12,8 @@ DIR = 'dashboards/'
 TEMPLATE_VARS = ['host', 'device', 'mountpoint', 'proxysql', 'hostgroup', 'cluster', 'instance', 'replset']
 
 def main():
-    headers = {'Authorization': 'Bearer %s' % (API_KEY,)}
-    r = requests.get('%s/api/search?query=&' % (HOST,), headers=headers)
+    headers = {'Authorization': 'Bearer {0!s}'.format(API_KEY)}
+    r = requests.get('{0!s}/api/search?query=&'.format(HOST), headers=headers)
     dashboards = r.json()
 
     for d in dashboards:
@@ -21,7 +21,7 @@ def main():
             continue
 
         print d['title']
-        r = requests.get('%s/api/dashboards/%s' % (HOST, d['uri']), headers=headers)
+        r = requests.get('{0!s}/api/dashboards/{1!s}'.format(HOST, d['uri']), headers=headers)
         data = r.json()['dashboard']
 
         dash = dash_cleanup(data)
